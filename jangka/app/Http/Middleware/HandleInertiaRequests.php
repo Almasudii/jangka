@@ -35,6 +35,9 @@ class HandleInertiaRequests extends Middleware
                     'id' => $request->user()->id,
                     'name' => $request->user()->name,
                     'email' => $request->user()->email,
+                    'role' => $request->user()->role,
+                    'created_at' => $request->user()->created_at->format('d M Y'),
+                    'updated_at' => $request->user()->updated_at->format('d M Y'),
                     'profile_photo_url' => $request->user()->profile_photo_url,
                     // pastikan kolom 'settings' ada di tabel users
                     'settings' => $request->user()->settings ?? (object) [],

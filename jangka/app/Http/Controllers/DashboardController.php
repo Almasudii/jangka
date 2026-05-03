@@ -30,6 +30,9 @@ class DashboardController extends Controller
             'user'           => [
                 'name' => $user->name,
                 'email' => $user->email,
+                'role' => $user->role,
+                'created_at' => $user->created_at->format('d M Y'),
+                'updated_at' => $user->updated_at->format('d M Y'),
                 'foto_profil' => $user->foto_profil
                     ? asset('storage/' . $user->foto_profil)
                     : asset('images/default.png'),

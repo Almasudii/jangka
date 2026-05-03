@@ -1,28 +1,82 @@
 <script setup>
-import { ref, watch, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { Link, usePage, router } from '@inertiajs/vue3'
 
 const dropdownOpen = ref(false)
 const page = usePage()
-const user = page.props.auth.user
 
-// ✅ Foto profil dinamis
-const profilePhotoUrl = ref(user.profile_photo_url || '/images/default-profile.png')
+// Ambil user secara reaktif dari Inertia props
+const user = computed(() => page.props.auth?.user || {})
 
-// 🔄 Pantau perubahan foto profil dari backend (setelah update profil)
-watch(
-  () => usePage().props.auth.user.profile_photo_url,
-  (newVal) => {
-    if (newVal) profilePhotoUrl.value = newVal
+// Ambil role user, dibuat lowercase supaya aman dari Admin/admin/Penduduk/penduduk
+const userRole = computed(() => {
+  return String(user.value?.role || '').toLowerCase()
+})
+
+// Foto profil dinamis
+const profilePhotoUrl = computed(() => {
+  return user.value?.profile_photo_url || '/images/default-profile.png'
+})
+
+// Semua menu sidebar
+const allMenus = [
+  {
+    label: 'Dashboard',
+    href: '/dashboard',
+  },
+  {
+    label: 'Berita',
+    href: '/berita',
+  },
+  {
+    label: 'Layanan',
+    href: '/layanan',
+  },
+  {
+    label: 'Peta Desa',
+    href: '/peta-desa',
+  },
+  {
+    label: 'Profil Desa',
+    href: '/profil-desa',
+  },
+  {
+    label: 'Fasilitas Desa',
+    href: '/fasilitas-desa',
+  },
+]
+
+// Menu berdasarkan role
+const sidebarMenus = computed(() => {
+  // Jika penduduk, hanya tampilkan Dashboard dan Berita
+  if (userRole.value === 'penduduk') {
+    return allMenus.filter((menu) =>
+      ['/dashboard', '/berita'].includes(menu.href)
+    )
   }
-)
 
-// ✅ Toggle dropdown
+  // Jika admin, tampilkan semua menu
+  if (userRole.value === 'admin') {
+    return allMenus
+  }
+
+  // Fallback jika role belum terbaca
+  return allMenus.filter((menu) =>
+    ['/dashboard', '/berita'].includes(menu.href)
+  )
+})
+
+// Cek menu aktif
+function isActiveMenu(href) {
+  return page.url === href || page.url.startsWith(`${href}/`)
+}
+
+// Toggle dropdown
 function toggleDropdown() {
   dropdownOpen.value = !dropdownOpen.value
 }
 
-// ✅ Logout user
+// Logout user
 function logout() {
   router.post(route('logout'), {
     onFinish: () => {
@@ -31,8 +85,11 @@ function logout() {
   })
 }
 
-// 🌙 Dark Mode otomatis sesuai pengaturan user
-const isDarkMode = computed(() => page.props.auth.user?.settings?.dark_mode ?? false)
+// Dark Mode otomatis sesuai pengaturan user
+const isDarkMode = computed(() => {
+  return user.value?.settings?.dark_mode ?? false
+})
+
 watch(
   isDarkMode,
   (val) => {
@@ -63,53 +120,14 @@ watch(
         <!-- Menu Navigasi -->
         <nav class="mt-4 space-y-1">
           <Link
-            href="/dashboard"
+            v-for="menu in sidebarMenus"
+            :key="menu.href"
+            :href="menu.href"
             class="block px-5 py-3 transition rounded-md"
-            :class="page.url === '/dashboard' ? 'bg-blue-700 font-semibold' : 'hover:bg-blue-700'"
+            :class="isActiveMenu(menu.href) ? 'bg-blue-700 font-semibold' : 'hover:bg-blue-700'"
           >
-            Dashboard
+            {{ menu.label }}
           </Link>
-
-          <Link
-            href="/berita"
-            class="block px-5 py-3 transition rounded-md"
-            :class="page.url === '/berita' ? 'bg-blue-700 font-semibold' : 'hover:bg-blue-700'"
-          >
-            Berita
-          </Link>
-
-          <Link
-            href="/layanan"
-            class="block px-5 py-3 transition rounded-md"
-            :class="page.url === '/layanan' ? 'bg-blue-700 font-semibold' : 'hover:bg-blue-700'"
-          >
-            Layanan
-          </Link>
-
-          <Link
-            href="/peta-desa"
-            class="block px-5 py-3 transition rounded-md"
-            :class="page.url === '/peta-desa' ? 'bg-blue-700 font-semibold' : 'hover:bg-blue-700'"
-          >
-            Peta Desa
-          </Link>
-
-          <!-- 🔹 Tambahan Profil Desa -->
-          <Link
-            href="/profil-desa"
-            class="block px-5 py-3 transition rounded-md"
-            :class="page.url === '/profil-desa' ? 'bg-blue-700 font-semibold' : 'hover:bg-blue-700'"
-          >
-            Profil Desa
-          </Link>
-          <Link
-              href="/fasilitas-desa"
-                 class="block px-5 py-3 transition rounded-md"
-                 :class="page.url === '/fasilitas-desa' ? 'bg-blue-700 font-semibold' : 'hover:bg-blue-700'"
->
-         Fasilitas Desa
-        </Link>
-
         </nav>
       </div>
 
@@ -138,13 +156,16 @@ watch(
             @click="toggleDropdown"
             class="flex items-center px-3 py-2 space-x-2 text-gray-700 transition bg-gray-100 rounded-md shadow-sm dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 dark:text-gray-100"
           >
-            <!-- ✅ Foto profil dinamis -->
             <img
               :src="profilePhotoUrl"
               alt="Profile"
               class="object-cover w-8 h-8 border rounded-full"
             />
-            <span class="capitalize">{{ user.name }}</span>
+
+            <span class="capitalize">
+              {{ user.name }}
+            </span>
+
             <svg
               class="w-4 h-4"
               fill="none"
@@ -152,7 +173,11 @@ watch(
               stroke-width="2"
               viewBox="0 0 24 24"
             >
-              <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M19 9l-7 7-7-7"
+              />
             </svg>
           </button>
 
@@ -168,12 +193,14 @@ watch(
               >
                 Edit Profil
               </Link>
+
               <Link
                 href="/settings"
                 class="block px-4 py-2 text-gray-700 transition dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700"
               >
                 Pengaturan
               </Link>
+
               <button
                 @click="logout"
                 class="block w-full px-4 py-2 text-left text-gray-700 transition dark:text-gray-100 hover:bg-red-100 dark:hover:bg-red-700 hover:text-red-600"
@@ -198,9 +225,9 @@ watch(
 .fade-leave-active {
   transition: opacity 0.2s;
 }
+
 .fade-enter-from,
 .fade-leave-to {
   opacity: 0;
 }
 </style>
-
