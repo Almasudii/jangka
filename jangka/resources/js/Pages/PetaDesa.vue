@@ -1,19 +1,29 @@
 <script setup>
+import { computed } from 'vue'
 import DashboardLayout from '@/Layouts/DashboardLayout.vue'
+
+const props = defineProps({
+  desa: String
+})
+
+const mapUrl = computed(() => {
+  const query = encodeURIComponent(`Desa ${props.desa || 'Tidak Diketahui'}, Sampang, Jawa Timur`)
+  return `https://maps.google.com/maps?q=${query}&t=&z=13&ie=UTF8&iwloc=&output=embed`
+})
 </script>
 
 <template>
   <DashboardLayout>
-    <div>
+    <div class="flex flex-col h-full w-full">
       <h1 class="text-2xl font-bold mb-4 text-gray-800">Peta Desa</h1>
       <p class="text-gray-600 mb-6">
-        Visualisasi lokasi dan batas wilayah Desa di Kabupaten Sampang.
+        Visualisasi lokasi dan batas wilayah Desa {{ desa || 'Tidak Diketahui' }} di Kabupaten Sampang, Jawa Timur.
       </p>
 
-      <!-- Contoh Peta (gunakan iframe Google Maps atau Leaflet.js jika ingin interaktif) -->
-      <div class="w-full h-96 rounded-xl overflow-hidden shadow-lg">
+      <!-- Contoh Peta -->
+      <div class="flex-grow w-full rounded-xl overflow-hidden shadow-lg relative bg-gray-900 border border-gray-700 h-[calc(100vh-200px)]">
         <iframe
-          src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3948.879651000364!2d113.2493!3d-7.1856!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2dd7c6c93ff1a9f1%3A0x4027a76e3531230!2sKabupaten%20Sampang%2C%20Jawa%20Timur!5e0!3m2!1sid!2sid!4v1715776000000!5m2!1sid!2sid"
+          :src="mapUrl"
           width="100%"
           height="100%"
           style="border:0;"
