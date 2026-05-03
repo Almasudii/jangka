@@ -32,6 +32,7 @@ class DatabaseSeeder extends Seeder
         // ✅ Jalankan seeder lain (jika ada)
         $this->call([
             DesaSeeder::class,
+            wilayah_batasan::class,
         ]);
     }
 }

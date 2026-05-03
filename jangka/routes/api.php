@@ -3,6 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Models\Desa;
+use App\Http\Controllers\Api\WilayahBoundaryController;
 
 /*
 |--------------------------------------------------------------------------
@@ -19,3 +20,9 @@ Route::get('/desa', function () {
         ->orderBy('nama_desa')
         ->get();
 });
+
+
+
+Route::get('/wilayah-boundaries', [WilayahBoundaryController::class, 'index']);
+
+Route::get('/wilayah-boundaries/{kode}', [WilayahBoundaryController::class, 'show']);

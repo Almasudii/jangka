@@ -59,7 +59,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Halaman tambahan di dashboard
     Route::get('/berita', fn() => Inertia::render('Berita'))->name('berita');
     Route::get('/layanan', fn() => Inertia::render('Layanan'))->name('layanan');
-    Route::get('/peta-desa', fn() => Inertia::render('PetaDesa'))->name('peta-desa');
+    Route::get('/peta-desa', function () {
+        $user = Auth::user();
+        return Inertia::render('PetaDesa', [
+            'desa' => $user->desa?->nama_desa ?? 'Tidak Diketahui'
+        ]);
+    })->name('peta-desa');
     Route::get('/profil-desa', [ProfileDesaController::class, 'index'])->name('profil.desa');
 
     /*
