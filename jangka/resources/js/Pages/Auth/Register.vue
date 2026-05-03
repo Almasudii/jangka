@@ -2,6 +2,7 @@
 import { useForm, Link } from '@inertiajs/vue3'
 import { ref, onMounted } from 'vue'
 import axios from 'axios'
+import InputError from '@/Components/InputError.vue'
 
 const props = defineProps({
   villages: {
@@ -34,9 +35,9 @@ onMounted(async () => {
 
 // Submit form
 function submit() {
-  form.post('/register', {
+  form.post(route('register'), {
     onSuccess: () => {
-      alert('Akun berhasil dibuat! Silakan login terlebih dahulu.')
+      form.reset('password', 'password_confirmation')
     },
   })
 }
@@ -83,6 +84,7 @@ function submit() {
             class="w-full px-4 py-3 text-white placeholder-gray-200 rounded-lg bg-white/20 focus:outline-none focus:ring-2 focus:ring-blue-400"
             required
           />
+          <InputError class="mt-2" :message="form.errors.name" />
         </div>
 
         <!-- Email -->
@@ -94,6 +96,7 @@ function submit() {
             class="w-full px-4 py-3 text-white placeholder-gray-200 rounded-lg bg-white/20 focus:outline-none focus:ring-2 focus:ring-blue-400"
             required
           />
+          <InputError class="mt-2" :message="form.errors.email" />
         </div>
 
         <!-- Desa -->
@@ -113,6 +116,7 @@ function submit() {
               {{ desa.nama_desa }}
             </option>
           </select>
+          <InputError class="mt-2" :message="form.errors.desa_id" />
         </div>
 
         <!-- Password -->
@@ -124,6 +128,7 @@ function submit() {
             class="w-full px-4 py-3 text-white placeholder-gray-200 rounded-lg bg-white/20 focus:outline-none focus:ring-2 focus:ring-blue-400"
             required
           />
+          <InputError class="mt-2" :message="form.errors.password" />
         </div>
 
         <!-- Konfirmasi Password -->
@@ -135,21 +140,23 @@ function submit() {
             class="w-full px-4 py-3 text-white placeholder-gray-200 rounded-lg bg-white/20 focus:outline-none focus:ring-2 focus:ring-blue-400"
             required
           />
+          <InputError class="mt-2" :message="form.errors.password_confirmation" />
         </div>
 
         <!-- Tombol Daftar -->
         <button
           type="submit"
+          :disabled="form.processing"
           class="w-full py-3 font-bold text-white transition rounded-lg bg-gradient-to-r from-blue-500 to-blue-700 hover:opacity-90"
         >
-          DAFTAR
+          {{ form.processing ? 'MEMPROSES...' : 'DAFTAR' }}
         </button>
       </form>
 
       <!-- Sudah Punya Akun -->
       <p class="mt-6 text-sm text-center text-gray-200">
         Sudah punya akun?
-        <a href="/login" class="font-semibold text-blue-300 hover:underline">
+        <a :href="route('login')" class="font-semibold text-blue-300 hover:underline">
           Login di sini
         </a>
       </p>

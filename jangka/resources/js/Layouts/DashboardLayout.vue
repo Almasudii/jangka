@@ -1,7 +1,6 @@
 <script setup>
 import { ref, watch, computed } from 'vue'
-import { Link, usePage } from '@inertiajs/vue3'
-import { Inertia } from '@inertiajs/inertia'
+import { Link, usePage, router } from '@inertiajs/vue3'
 
 const dropdownOpen = ref(false)
 const page = usePage()
@@ -25,7 +24,11 @@ function toggleDropdown() {
 
 // ✅ Logout user
 function logout() {
-  Inertia.post('/logout')
+  router.post(route('logout'), {
+    onFinish: () => {
+      window.location.href = '/login'
+    },
+  })
 }
 
 // 🌙 Dark Mode otomatis sesuai pengaturan user
