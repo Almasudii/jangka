@@ -5,20 +5,16 @@ import { Link, usePage, router } from '@inertiajs/vue3'
 const dropdownOpen = ref(false)
 const page = usePage()
 
-// Ambil user secara reaktif dari Inertia props
 const user = computed(() => page.props.auth?.user || {})
 
-// Ambil role user, dibuat lowercase supaya aman dari Admin/admin/Penduduk/penduduk
 const userRole = computed(() => {
   return String(user.value?.role || '').toLowerCase()
 })
 
-// Foto profil dinamis
 const profilePhotoUrl = computed(() => {
   return user.value?.profile_photo_url || '/images/default-profile.png'
 })
 
-// Semua menu sidebar
 const allMenus = [
   {
     label: 'Dashboard',
@@ -27,6 +23,10 @@ const allMenus = [
   {
     label: 'Berita',
     href: '/berita',
+  },
+  {
+    label: 'Pengaturan Admin',
+    href: '/admin/users',
   },
   {
     label: 'Layanan',
@@ -46,37 +46,30 @@ const allMenus = [
   },
 ]
 
-// Menu berdasarkan role
 const sidebarMenus = computed(() => {
-  // Jika penduduk, hanya tampilkan Dashboard dan Berita
   if (userRole.value === 'penduduk') {
     return allMenus.filter((menu) =>
-      ['/dashboard', '/berita'].includes(menu.href)
+      ['/dashboard', '/berita', '/peta-desa', '/profil-desa', '/fasilitas-desa', '/layanan'].includes(menu.href)
     )
   }
 
-  // Jika admin, tampilkan semua menu
   if (userRole.value === 'admin') {
     return allMenus
   }
 
-  // Fallback jika role belum terbaca
   return allMenus.filter((menu) =>
     ['/dashboard', '/berita'].includes(menu.href)
   )
 })
 
-// Cek menu aktif
 function isActiveMenu(href) {
   return page.url === href || page.url.startsWith(`${href}/`)
 }
 
-// Toggle dropdown
 function toggleDropdown() {
   dropdownOpen.value = !dropdownOpen.value
 }
 
-// Logout user
 function logout() {
   router.post(route('logout'), {
     onFinish: () => {
@@ -85,7 +78,6 @@ function logout() {
   })
 }
 
-// Dark Mode otomatis sesuai pengaturan user
 const isDarkMode = computed(() => {
   return user.value?.settings?.dark_mode ?? false
 })
@@ -103,21 +95,24 @@ watch(
   <div
     class="flex min-h-screen transition-colors duration-300 bg-gray-100 dark:bg-gray-900 dark:text-gray-100"
   >
-    <!-- Sidebar -->
     <aside class="flex flex-col justify-between w-64 text-white bg-blue-800 shadow-lg">
       <div>
-        <!-- Logo dan Judul -->
         <div class="flex flex-col items-center p-6 border-b border-blue-700">
           <img
             src="/images/logoKabupatenSampang.png"
             alt="Logo Smart Village"
             class="object-contain w-20 mb-2 h-50"
           />
-          <h1 class="text-lg font-bold">Smart Village</h1>
-          <p class="text-xs text-gray-400">Kabupaten Sampang</p>
+
+          <h1 class="text-lg font-bold">
+            Smart Village
+          </h1>
+
+          <p class="text-xs text-gray-400">
+            Kabupaten Sampang
+          </p>
         </div>
 
-        <!-- Menu Navigasi -->
         <nav class="mt-4 space-y-1">
           <Link
             v-for="menu in sidebarMenus"
@@ -131,26 +126,21 @@ watch(
         </nav>
       </div>
 
-      <!-- Footer Sidebar -->
       <div class="p-4 text-xs text-center text-gray-400 border-t border-gray-700">
         &copy; 2025 Smart Village
       </div>
     </aside>
 
-    <!-- Konten Utama -->
     <main class="flex flex-col flex-1">
-      <!-- Header -->
       <header
         class="sticky top-0 z-50 flex items-center justify-between p-4 transition-colors bg-white shadow-md dark:bg-gray-800"
       >
-        <!-- Judul -->
         <div class="flex items-center space-x-3">
           <h2 class="text-xl font-bold text-gray-800 capitalize dark:text-gray-100">
             {{ page.component }}
           </h2>
         </div>
 
-        <!-- Profil + Dropdown -->
         <div class="relative">
           <button
             @click="toggleDropdown"
@@ -181,7 +171,6 @@ watch(
             </svg>
           </button>
 
-          <!-- Dropdown -->
           <transition name="fade">
             <div
               v-if="dropdownOpen"
@@ -212,7 +201,6 @@ watch(
         </div>
       </header>
 
-      <!-- Isi Halaman -->
       <div class="flex-1 p-6 overflow-y-auto">
         <slot />
       </div>

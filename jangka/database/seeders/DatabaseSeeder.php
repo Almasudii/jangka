@@ -19,6 +19,7 @@ class DatabaseSeeder extends Seeder
             'email' => 'admin@gmail.com',
             'password' => Hash::make('123456'),
             'role' => 'admin',
+            'desa_id' => 1,
         ]);
 
         // Penduduk
@@ -27,6 +28,7 @@ class DatabaseSeeder extends Seeder
             'email' => 'penduduk@gmail.com',
             'password' => Hash::make('123456'),
             'role' => 'penduduk',
+            'desa_id' => 1,
         ]);
 
         // ✅ Jalankan seeder lain (jika ada)
