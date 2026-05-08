@@ -131,4 +131,9 @@ SVG;
             'notifications' => true,
         ];
     }
+
+    public function beritas()
+    {
+        return $this->hasMany(Berita::class, 'penulis_id');
+    }
 }

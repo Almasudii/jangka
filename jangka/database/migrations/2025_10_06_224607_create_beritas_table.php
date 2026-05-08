@@ -11,7 +11,12 @@ return new class extends Migration
         Schema::create('beritas', function (Blueprint $table) {
             $table->id();
             $table->string('judul');
-            $table->text('isi');
+            $table->text('ringkasan')->nullable();
+            $table->longText('isi');
+            $table->string('thumbnail')->nullable();
+            $table->enum('status', ['draft', 'published'])->default('draft');
+            $table->foreignId('penulis_id')->constrained('users')->cascadeOnDelete();
+            $table->timestamp('published_at')->nullable();
             $table->timestamps();
         });
     }

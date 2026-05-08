@@ -33,6 +33,7 @@ class DatabaseSeeder extends Seeder
         $this->call([
             DesaSeeder::class,
             wilayah_batasan::class,
+            BeritaSeeder::class,
         ]);
     }
 }
