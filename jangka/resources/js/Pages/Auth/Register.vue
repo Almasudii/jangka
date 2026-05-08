@@ -7,11 +7,17 @@ import InputError from '@/Components/InputError.vue'
 const props = defineProps({
   villages: {
     type: Array,
-    default: () => []
-  }
+    default: () => [],
+  },
 })
 
 const villages = ref(props.villages || [])
+
+const notification = ref({
+  show: false,
+  type: 'success',
+  message: '',
+})
 
 const form = useForm({
   name: '',
@@ -21,23 +27,48 @@ const form = useForm({
   desa_id: '',
 })
 
-// Ambil data desa dari API jika belum ada
+function showNotification(type, message) {
+  notification.value = {
+    show: true,
+    type,
+    message,
+  }
+
+  setTimeout(() => {
+    notification.value.show = false
+  }, 3500)
+}
+
 onMounted(async () => {
   if (!villages.value.length) {
     try {
       const response = await axios.get('/api/desa')
       villages.value = response.data
     } catch (error) {
+      showNotification('error', 'Gagal mengambil data desa.')
       console.error('Gagal mengambil data desa:', error)
     }
   }
 })
 
-// Submit form
 function submit() {
   form.post(route('register'), {
+    preserveScroll: true,
+
+    onStart: () => {
+      notification.value.show = false
+    },
+
     onSuccess: () => {
+      showNotification('success', 'Registrasi berhasil. Mengalihkan ke dashboard...')
       form.reset('password', 'password_confirmation')
+    },
+
+    onError: () => {
+      showNotification(
+        'error',
+        'Registrasi gagal. Periksa kembali data yang kamu masukkan.'
+      )
     },
   })
 }
@@ -45,19 +76,27 @@ function submit() {
 
 <template>
   <div class="relative flex items-center justify-center min-h-screen overflow-hidden">
-
-    <!-- 🔹 Background Video -->
     <video autoplay muted loop playsinline class="absolute object-cover w-full h-full">
       <source src="/videos/Sampang.mp4" type="video/mp4" />
     </video>
 
-    <!-- 🔹 Overlay Gelap -->
     <div class="absolute inset-0 bg-black/50"></div>
 
-    <!-- 🔹 Card Register -->
-    <div class="relative z-10 w-full max-w-md p-8 border shadow-2xl bg-white/10 backdrop-blur-lg border-white/20 rounded-2xl">
+    <transition name="fade">
+      <div
+        v-if="notification.show"
+        class="fixed z-50 px-5 py-4 border shadow-xl top-6 right-6 rounded-xl backdrop-blur-md"
+        :class="notification.type === 'success'
+          ? 'bg-green-500/90 border-green-300 text-white'
+          : 'bg-red-500/90 border-red-300 text-white'"
+      >
+        <p class="text-sm font-semibold">
+          {{ notification.message }}
+        </p>
+      </div>
+    </transition>
 
-      <!-- 🖼️ Logo -->
+    <div class="relative z-10 w-full max-w-md p-8 border shadow-2xl bg-white/10 backdrop-blur-lg border-white/20 rounded-2xl">
       <div class="flex justify-center mb-4">
         <img
           src="/images/smartvillage.png"
@@ -66,16 +105,15 @@ function submit() {
         />
       </div>
 
-      <!-- Judul -->
-      <h2 class="mb-2 text-3xl font-bold text-center text-white">Register</h2>
+      <h2 class="mb-2 text-3xl font-bold text-center text-white">
+        Register
+      </h2>
+
       <p class="mb-6 text-sm text-center text-gray-200">
         Isi data di bawah untuk membuat akun baru
       </p>
 
-      <!-- Form -->
       <form @submit.prevent="submit" class="space-y-5">
-
-        <!-- Nama -->
         <div>
           <input
             v-model="form.name"
@@ -87,7 +125,6 @@ function submit() {
           <InputError class="mt-2" :message="form.errors.name" />
         </div>
 
-        <!-- Email -->
         <div>
           <input
             v-model="form.email"
@@ -99,14 +136,16 @@ function submit() {
           <InputError class="mt-2" :message="form.errors.email" />
         </div>
 
-        <!-- Desa -->
         <div>
           <select
             v-model="form.desa_id"
             class="w-full px-4 py-3 text-white rounded-lg bg-white/20 focus:outline-none focus:ring-2 focus:ring-blue-400"
             required
           >
-            <option value="" disabled class="text-gray-300 bg-gray-700">Pilih Desa...</option>
+            <option value="" disabled class="text-gray-300 bg-gray-700">
+              Pilih Desa...
+            </option>
+
             <option
               v-for="desa in villages"
               :key="desa.id"
@@ -116,10 +155,10 @@ function submit() {
               {{ desa.nama_desa }}
             </option>
           </select>
+
           <InputError class="mt-2" :message="form.errors.desa_id" />
         </div>
 
-        <!-- Password -->
         <div>
           <input
             v-model="form.password"
@@ -131,7 +170,6 @@ function submit() {
           <InputError class="mt-2" :message="form.errors.password" />
         </div>
 
-        <!-- Konfirmasi Password -->
         <div>
           <input
             v-model="form.password_confirmation"
@@ -143,17 +181,22 @@ function submit() {
           <InputError class="mt-2" :message="form.errors.password_confirmation" />
         </div>
 
-        <!-- Tombol Daftar -->
         <button
           type="submit"
           :disabled="form.processing"
-          class="w-full py-3 font-bold text-white transition rounded-lg bg-gradient-to-r from-blue-500 to-blue-700 hover:opacity-90"
+          class="flex items-center justify-center w-full gap-3 py-3 font-bold text-white transition rounded-lg bg-gradient-to-r from-blue-500 to-blue-700 hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-70"
         >
-          {{ form.processing ? 'MEMPROSES...' : 'DAFTAR' }}
+          <span
+            v-if="form.processing"
+            class="w-5 h-5 border-2 border-white rounded-full border-t-transparent animate-spin"
+          ></span>
+
+          <span>
+            {{ form.processing ? 'MEMPROSES...' : 'DAFTAR' }}
+          </span>
         </button>
       </form>
 
-      <!-- Sudah Punya Akun -->
       <p class="mt-6 text-sm text-center text-gray-200">
         Sudah punya akun?
         <a :href="route('login')" class="font-semibold text-blue-300 hover:underline">
@@ -161,7 +204,6 @@ function submit() {
         </a>
       </p>
 
-      <!-- Kembali ke Halaman Utama -->
       <div class="mt-6 text-center">
         <Link
           href="/"
@@ -180,5 +222,16 @@ video {
   top: 0;
   left: 0;
   z-index: 0;
+}
+
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.25s, transform 0.25s;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+  transform: translateY(-10px);
 }
 </style>

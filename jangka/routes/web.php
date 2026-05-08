@@ -14,6 +14,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProfileDesaController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\FasilitasDesaController;
 
 Route::middleware('guest')->group(function () {
     Route::get('/register', [RegisteredUserController::class, 'create'])->name('register');
@@ -78,37 +79,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/settings', [SettingsController::class, 'index'])->name('settings.index');
     Route::post('/settings', [SettingsController::class, 'update'])->name('settings.update');
 
-    Route::get('/fasilitas-desa', function () {
-        $fasilitas = [
-            [
-                'nama' => 'Balai Desa',
-                'deskripsi' => 'Tempat utama kegiatan administrasi dan musyawarah desa.',
-                'icon' => 'building',
-            ],
-            [
-                'nama' => 'Puskesmas',
-                'deskripsi' => 'Pusat pelayanan kesehatan masyarakat desa.',
-                'icon' => 'health',
-            ],
-            [
-                'nama' => 'Sekolah Dasar Negeri 1',
-                'deskripsi' => 'Fasilitas pendidikan dasar bagi anak-anak desa.',
-                'icon' => 'school',
-            ],
-            [
-                'nama' => 'Masjid Al-Hidayah',
-                'deskripsi' => 'Tempat ibadah utama masyarakat desa.',
-                'icon' => 'mosque',
-            ],
-            [
-                'nama' => 'Lapangan Merdeka',
-                'deskripsi' => 'Tempat olahraga dan kegiatan masyarakat.',
-                'icon' => 'field',
-            ],
-        ];
-
-        return Inertia::render('FasilitasDesa', [
-            'fasilitas' => $fasilitas,
-        ]);
-    })->name('fasilitas-desa');
+    Route::get('/fasilitas-desa', [FasilitasDesaController::class, 'index'])->name('fasilitas-desa.index');
+    Route::get('/fasilitas-desa/create', [FasilitasDesaController::class, 'create'])->name('fasilitas-desa.create');
+    Route::post('/fasilitas-desa', [FasilitasDesaController::class, 'store'])->name('fasilitas-desa.store');
+    Route::get('/fasilitas-desa/{fasilitasDesa}/edit', [FasilitasDesaController::class, 'edit'])->name('fasilitas-desa.edit');
+    Route::put('/fasilitas-desa/{fasilitasDesa}', [FasilitasDesaController::class, 'update'])->name('fasilitas-desa.update');
+    Route::delete('/fasilitas-desa/{fasilitasDesa}', [FasilitasDesaController::class, 'destroy'])->name('fasilitas-desa.destroy');
 });

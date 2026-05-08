@@ -13,6 +13,11 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
+        $this->call([
+            DesaSeeder::class,
+            wilayah_batasan::class,
+        ]);
+
         // Admin
         User::create([
             'name' => 'Admin',
@@ -31,11 +36,9 @@ class DatabaseSeeder extends Seeder
             'desa_id' => 1,
         ]);
 
-        // ✅ Jalankan seeder lain (jika ada)
         $this->call([
-            DesaSeeder::class,
-            wilayah_batasan::class,
             BeritaSeeder::class,
+            FasilitasDesaSeeder::class,
         ]);
     }
 }
