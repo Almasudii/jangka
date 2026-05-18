@@ -67,20 +67,33 @@ function extractPopulationRows(payload) {
   })
 }
 
-async function fetchBpsData(url) {
-  const response = await fetch(url)
+async function fetchBpsData(url, retries = 2) {
+  let lastError
 
-  if (!response.ok) {
-    throw new Error('Gagal mengambil data dari BPS')
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      const response = await fetch(url)
+
+      if (!response.ok) {
+        throw new Error('Gagal mengambil data dari BPS')
+      }
+
+      const payload = await response.json()
+
+      if (payload.status !== 'OK') {
+        throw new Error('Data BPS tidak tersedia')
+      }
+
+      return payload
+    } catch (error) {
+      lastError = error
+      if (attempt < retries) {
+        await new Promise((resolve) => setTimeout(resolve, 500))
+      }
+    }
   }
 
-  const payload = await response.json()
-
-  if (payload.status !== 'OK') {
-    throw new Error('Data BPS tidak tersedia')
-  }
-
-  return payload
+  throw lastError
 }
 
 async function loadPopulationData() {
@@ -97,8 +110,7 @@ async function loadPopulationData() {
     rows2023.value = extractPopulationRows(data2023)
     lastUpdate.value = data2024.last_update || '-'
   } catch (error) {
-    errorMessage.value =
-      error?.message || 'Terjadi kesalahan saat memuat data penduduk.'
+    errorMessage.value = 'Website Pemerintahan Sampang Tidak Menanggapi'
   } finally {
     loading.value = false
   }
@@ -260,6 +272,9 @@ onMounted(() => {
           v-if="loading"
           class="mt-8 rounded-3xl border border-slate-200 bg-white p-8 text-center shadow-sm"
         >
+          <div class="flex justify-center mb-4">
+            <div class="h-12 w-12 animate-spin rounded-full border-4 border-slate-200 border-t-blue-600"></div>
+          </div>
           <p class="text-sm font-semibold text-slate-500">
             Memuat data penduduk dari BPS...
           </p>
@@ -272,10 +287,13 @@ onMounted(() => {
         >
           <p class="font-semibold">{{ errorMessage }}</p>
           <p class="mt-2 text-sm">
-            Jika fetch terkena CORS, ambil data BPS melalui backend Laravel lalu
-            kirimkan ke Vue sebagai API internal.
-          </p>
-        </div>
+            Lakukan refresh data untuk mencoba kembali atau periksa koneksi internet Anda.
+          </p>          <button
+            @click="loadPopulationData"
+            class="mt-4 inline-flex rounded-lg bg-rose-600 px-6 py-2 font-semibold text-white transition-colors hover:bg-rose-700"
+          >
+            Refresh Data
+          </button>        </div>
 
         <template v-else>
           <!-- Main Stats -->
